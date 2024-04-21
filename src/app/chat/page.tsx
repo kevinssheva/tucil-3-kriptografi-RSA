@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import Image from "next/image";
 import Message from "./component/Message";
@@ -8,18 +8,19 @@ import { IoAttach } from "react-icons/io5";
 interface MessageData {
   message: string;
   sender: string;
+  timestamp: string;
 }
 
 export default function ChatPage(): JSX.Element {
   const [messagesData, setMessagesData] = useState<MessageData[]>([
-    { message: "Hello", sender: "Alice" },
-    { message: "Hi", sender: "Bob" },
-    { message: "How are you?", sender: "Alice" },
-    { message: "I'm fine", sender: "Bob" },
-    { message: "Good to hear that", sender: "Alice" },
-    { message: "How about you?", sender: "Bob" },
-    { message: "I'm good too", sender: "Alice" },
-    { message: "That's great!", sender: "Bob" },
+    { message: "Hello", sender: "Alice", timestamp: "2:00" },
+    { message: "Hi", sender: "Bob", timestamp: "12:01" },
+    { message: "How are you?", sender: "Alice", timestamp: "12:02" },
+    { message: "I'm fine", sender: "Bob", timestamp: "12:03" },
+    { message: "Good to hear that", sender: "Alice", timestamp: "12:04" },
+    { message: "How about you?", sender: "Bob", timestamp: "12:05" },
+    { message: "I'm good too", sender: "Alice", timestamp: "12:06" },
+    { message: "That's great!", sender: "Bob", timestamp: "12:07" },
   ]);
 
   const [bobMessage, setBobMessage] = useState<string>("");
@@ -30,7 +31,13 @@ export default function ChatPage(): JSX.Element {
 
   const addMessage = (message: string, sender: string): void => {
     if (!message) return;
-    const newMessage: MessageData = { message, sender };
+    const timestamp = new Date()
+      .toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+      })
+      .split(" ")[0];
+    const newMessage: MessageData = { message, sender, timestamp };
     setMessagesData((prevMessages) => [...prevMessages, newMessage]);
   };
 
@@ -65,14 +72,14 @@ export default function ChatPage(): JSX.Element {
   }, [messagesData]);
 
   return (
-    <div className="bg-orange-200 flex flex-col gap-8 min-h-screen p-20">
+    <div className="bg-orange-200 flex flex-col gap-8 min-h-screen max-h-screen p-20">
       <div className="bg-white p-12 flex rounded-lg min-h-[35rem]">
         <div className="w-1/2 p-2 border-r-2 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-9 aspect-square bg-slate-300 rounded-full relative overflow-hidden">
                 <Image
-                  src="/yalz.png"
+                  src="/agit.jpeg"
                   fill={true}
                   alt="profile"
                   className="object-cover w-full h-full"
@@ -91,6 +98,8 @@ export default function ChatPage(): JSX.Element {
                   key={index}
                   message={message.message}
                   incoming={message.sender === "Alice"}
+                  timestamp={message.timestamp}
+                  sender={message.sender}
                 />
               ))}
             </div>
@@ -147,6 +156,8 @@ export default function ChatPage(): JSX.Element {
                   key={index}
                   message={message.message}
                   incoming={message.sender === "Bob"}
+                  timestamp={message.timestamp}
+                  sender={message.sender}
                 />
               ))}
             </div>
