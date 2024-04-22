@@ -1,10 +1,11 @@
-"use client";
+"use client"
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import Image from "next/image";
 import Message, { Key } from "./component/Message";
 import { BsSend } from "react-icons/bs";
 import { IoAttach } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import File from "./component/File";
 
 interface MessageData {
   message: string;
@@ -88,6 +89,22 @@ export default function ChatPage(): JSX.Element {
     }
   };
 
+  const handleAttachClick = () => {
+    // Trigger file input click
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      // Handle file upload
+      console.log("File uploaded:", file);
+      console.log(file.name)
+    }
+  };
+
   useEffect(() => {
     // Scroll to the bottom of the chat after messages are updated
     if (aliceChatContainerRef.current) {
@@ -103,6 +120,8 @@ export default function ChatPage(): JSX.Element {
       });
     }
   }, [messagesData]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="bg-orange-200 flex items-center justify-center gap-8 min-h-screen max-h-screen p-20">
@@ -154,7 +173,7 @@ export default function ChatPage(): JSX.Element {
                   }
                   onKeyDown={handleBobKeyDown}
                 />
-                <button className="text-slate-500 rounded-full p-2">
+                <button className="text-slate-500 rounded-full p-2" onClick={handleAttachClick}>
                   <IoAttach size={30} />
                 </button>
                 <button
@@ -166,6 +185,12 @@ export default function ChatPage(): JSX.Element {
                 >
                   <BsSend size={20} />
                 </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileInputChange}
+                />
               </div>
             </div>
           </div>
@@ -198,6 +223,7 @@ export default function ChatPage(): JSX.Element {
                     chatKey={bobKey}
                   />
                 ))}
+                <File name="file.pdf" timestamp="today" />
               </div>
             </div>
 
@@ -213,7 +239,7 @@ export default function ChatPage(): JSX.Element {
                   }
                   onKeyDown={handleAliceKeyDown}
                 />
-                <button className="text-slate-500 rounded-full p-2">
+                <button className="text-slate-500 rounded-full p-2" onClick={handleAttachClick}>
                   <IoAttach size={30} />
                 </button>
                 <button
@@ -225,6 +251,12 @@ export default function ChatPage(): JSX.Element {
                 >
                   <BsSend size={20} />
                 </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileInputChange}
+                />
               </div>
             </div>
           </div>
