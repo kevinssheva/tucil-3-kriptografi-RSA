@@ -42,6 +42,7 @@ export default function Message({
   };
 
   const text = useMemo(() => {
+    console.log(chatKey)
     let encryptedMessage = "";
     let decryptedMessage = "";
     for (let i = 0; i < message.length; i++) {
@@ -56,14 +57,12 @@ export default function Message({
         BigInt(chatKey.d),
         BigInt(chatKey.n)
       );
-      encryptedMessage += String.fromCharCode(Number(encryptedChar));
+      encryptedMessage += encryptedChar.toString();
       decryptedMessage += String.fromCharCode(Number(decryptChar));
     }
-    let bytes = new TextEncoder().encode(encryptedMessage);
-    let byteCharacters = Array.from(bytes);
-    let cipherText = btoa(String.fromCharCode(...byteCharacters));
 
-    cipherText = divideLongText(cipherText, 50);
+    let cipherText = btoa(encryptedMessage);
+    cipherText = divideLongText(cipherText, 45);
     decryptedMessage = divideLongText(decryptedMessage, 65);
     return { cipherText, plainText: decryptedMessage };
   }, [message, chatKey]);

@@ -5,16 +5,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [bits, setBits] = useState(16); // [1
+  const [bits, setBits] = useState(64); // [1
   const [aliceKey, setAliceKey] = useState({
     n: BigInt(0),
     e: BigInt(0),
-    d: BigInt(0),
+    d: 0,
   });
   const [bobKey, setBobKey] = useState({
     n: BigInt(0),
     e: BigInt(0),
-    d: BigInt(0),
+    d: 0,
   });
   const [isGenerated, setIsGenerated] = useState(false);
 
@@ -25,7 +25,7 @@ export default function Home() {
       setAliceKey({
         n: BigInt(parsedAliceKey.n),
         e: BigInt(parsedAliceKey.e),
-        d: BigInt(parsedAliceKey.d),
+        d: parsedAliceKey.d,
       });
     }
 
@@ -35,7 +35,7 @@ export default function Home() {
       setBobKey({
         n: BigInt(parsedBobKey.n),
         e: BigInt(parsedBobKey.e),
-        d: BigInt(parsedBobKey.d),
+        d: parsedBobKey.d,
       });
     }
 
@@ -96,10 +96,11 @@ export default function Home() {
             value={bits}
             onChange={(e) => setBits(parseInt(e.target.value))}
           >
-            <option value={16}>16 bits</option>
-            <option value={32}>32 bits</option>
             <option value={64}>64 bits</option>
             <option value={128}>128 bits</option>
+            <option value={256}>256 bits</option>
+            <option value={512}>512 bits</option>
+            <option value={1024}>1024 bits</option>
           </select>
         </div>
         {isGenerated && (
