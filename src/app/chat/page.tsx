@@ -15,9 +15,10 @@ interface MessageData {
 
 interface FileData {
   name: string;
+  type: string;
+  content: string | Uint8Array;
   sender: string;
   timestamp: string;
-  file?: File;
 }
 
 export default function ChatPage(): JSX.Element {
@@ -42,7 +43,7 @@ export default function ChatPage(): JSX.Element {
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
-
+  console.log(fileData);
   useEffect(() => {
     setIsLoading(true);
     const savedAliceKey = localStorage.getItem("aliceKey");
@@ -99,26 +100,72 @@ export default function ChatPage(): JSX.Element {
     }
   };
 
-  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
       // Handle file upload
-      console.log("File uploaded:", file);
-      console.log(file.name);
-      const timestamp = new Date()
-        .toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "numeric",
-        })
-        .split(" ")[0];
-      const newFile: FileData = {
-        name: file.name,
-        sender: "Alice",
-        timestamp,
-        file,
-      };
-      setFileData((prevFiles) => [...prevFiles, newFile]);
+      const fileName = file.name;
+      const fileType = file.type;
+      const sender = e.target.name;
+      const reader = new FileReader();
+
+      reader.onload =
+        file.type === "text/plain"
+          ? (e) =>
+              handleTextFile(e, (text: string) => {
+                updateFileData(fileName, fileType, text, sender);
+              })
+          : (e) =>
+              handleBinaryFile(e, (binary: Uint8Array) => {
+                updateFileData(fileName, fileType, binary, sender);
+              });
+
+      if (file.type === "text/plain") {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     }
+  };
+
+  const updateFileData = (
+    fileName: string,
+    fileType: string,
+    content: string | Uint8Array,
+    sender: string
+  ) => {
+    setFileData((prevFiles) => [
+      ...prevFiles,
+      {
+        name: fileName,
+        type: fileType,
+        content: content,
+        sender: sender,
+        timestamp: new Date()
+          .toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "numeric",
+          })
+          .split(" ")[0],
+      },
+    ]);
+  };
+
+  const handleTextFile = (
+    e: ProgressEvent<FileReader>,
+    callback: (text: string) => void
+  ) => {
+    const text = e.target?.result as string;
+    callback(text);
+  };
+
+  const handleBinaryFile = (
+    e: ProgressEvent<FileReader>,
+    callback: (binary: Uint8Array) => void
+  ) => {
+    const buffer = e.target?.result as ArrayBuffer;
+    const binary = new Uint8Array(buffer);
+    callback(binary);
   };
 
   useEffect(() => {
@@ -177,8 +224,11 @@ export default function ChatPage(): JSX.Element {
                   <File
                     key={index}
                     name={file.name}
+                    type={file.type}
                     incoming={file.sender === "Alice"}
                     timestamp={file.timestamp}
+                    content={file.content}
+                    chatKey={aliceKey}
                   />
                 ))}
               </div>
@@ -196,12 +246,12 @@ export default function ChatPage(): JSX.Element {
                   }
                   onKeyDown={handleBobKeyDown}
                 />
-                <button
-                  className="text-slate-500 rounded-full p-2"
-                  onClick={handleAttachClick}
+                <label
+                  htmlFor="fileBob"
+                  className="cursor-pointer text-slate-500 rounded-full p-2"
                 >
                   <IoAttach size={30} />
-                </button>
+                </label>
                 <button
                   className="bg-orange-400 text-white rounded-full p-4"
                   onClick={() => {
@@ -212,8 +262,9 @@ export default function ChatPage(): JSX.Element {
                   <BsSend size={20} />
                 </button>
                 <input
+                  id="fileBob"
+                  name="Bob"
                   type="file"
-                  ref={fileInputRef}
                   style={{ display: "none" }}
                   onChange={handleFileInputChange}
                 />
@@ -253,8 +304,11 @@ export default function ChatPage(): JSX.Element {
                   <File
                     key={index}
                     name={file.name}
+                    type={file.type}
                     incoming={file.sender === "Bob"}
                     timestamp={file.timestamp}
+                    content={file.content}
+                    chatKey={bobKey}
                   />
                 ))}
               </div>
@@ -272,12 +326,12 @@ export default function ChatPage(): JSX.Element {
                   }
                   onKeyDown={handleAliceKeyDown}
                 />
-                <button
-                  className="text-slate-500 rounded-full p-2"
-                  onClick={handleAttachClick}
+                <label
+                  htmlFor="fileAlice"
+                  className="cursor-pointer text-slate-500 rounded-full p-2"
                 >
                   <IoAttach size={30} />
-                </button>
+                </label>
                 <button
                   className="bg-orange-400 text-white rounded-full p-4"
                   onClick={() => {
@@ -288,8 +342,9 @@ export default function ChatPage(): JSX.Element {
                   <BsSend size={20} />
                 </button>
                 <input
+                  id="fileAlice"
+                  name="Alice"
                   type="file"
-                  ref={fileInputRef}
                   style={{ display: "none" }}
                   onChange={handleFileInputChange}
                 />

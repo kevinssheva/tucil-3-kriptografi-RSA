@@ -1,23 +1,98 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Key } from "./Message";
+import { crypt } from "@/crypto/rsa";
 
 interface FileProps {
   name: string;
-  timestamp: string;
+  type: string;
+  content: string | Uint8Array;
   incoming: boolean;
-  file?: File;
+  timestamp: string;
+  chatKey: Key;
 }
 
-export default function File({ name, timestamp, incoming, file }: FileProps) {
-  console.log(file)
-    const handleDownload = () => {
+export default function File({
+  name,
+  timestamp,
+  incoming,
+  content,
+  type,
+  chatKey,
+}: FileProps) {
+  // console.log(file);
+  // const handleDownload = () => {
+  //   if (!file) return;
+  //   const url = URL.createObjectURL(file);
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = name;
+  //   a.click();
+  // };
+  const file = useMemo(() => {
+    if (typeof content === "string") {
+      let encryptedMessage = "";
+      let decryptedMessage = "";
+      for (let i = 0; i < content.length; i++) {
+        const messageChar = content.charCodeAt(i);
+        const encryptedChar = crypt(
+          messageChar,
+          BigInt(chatKey.e),
+          BigInt(chatKey.n)
+        );
+        const decryptChar = crypt(
+          encryptedChar,
+          BigInt(chatKey.d),
+          BigInt(chatKey.n)
+        );
+        encryptedMessage += encryptedChar.toString();
+        decryptedMessage += String.fromCharCode(Number(decryptChar));
+      }
+      let cipherText = btoa(encryptedMessage);
+      return { cipherText, plainText: decryptedMessage };
+    } else {
+      //for uint8array
+      let encryptedArray = new Uint8Array(content.length);
+      let decryptedArray = new Uint8Array(content.length);
+      for (let i = 0; i < content.length; i++) {
+        const encryptedChar = crypt(
+          content[i],
+          BigInt(chatKey.e),
+          BigInt(chatKey.n)
+        );
+        const decryptedChar = crypt(
+          encryptedChar,
+          BigInt(chatKey.d),
+          BigInt(chatKey.n)
+        );
+        encryptedArray[i] = Number(encryptedChar);
+        decryptedArray[i] = Number(decryptedChar);
+      }
+      return { cipherText: encryptedArray, plainText: decryptedArray };
+    }
+  }, [content, chatKey]);
+
+  const [decrypted, setDecrypted] = useState<boolean>(false);
+  const [displayContent, setDisplayContent] = useState<string | Uint8Array>(
+    file.cipherText
+  );
+
+  const fileHandler = () => {
+    if (decrypted) {
+      setDisplayContent(file.cipherText);
+    } else {
+      setDisplayContent(file.plainText);
+    }
+    setDecrypted(!decrypted);
+  };
+
+  const handleDonwload = () => {
     if (!file) return;
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(new Blob([displayContent], { type }));
     const a = document.createElement("a");
     a.href = url;
     a.download = name;
     a.click();
   };
-
   return (
     <div
       className={`flex items-start gap-2.5 ${
@@ -32,7 +107,7 @@ export default function File({ name, timestamp, incoming, file }: FileProps) {
             }`}
           >
             <div className="">
-              <span className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white pb-2">
+              <span className="flex items-center gap-2 text-sm font-medium text-gray-900 pb-2">
                 {name}
               </span>
             </div>
@@ -42,12 +117,12 @@ export default function File({ name, timestamp, incoming, file }: FileProps) {
                   incoming
                     ? "bg-gray-50 hover:bg-gray-100"
                     : "bg-orange-50 hover:bg-orange-100"
-                } rounded-lg focus:ring-4 focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-600 dark:hover:bg-gray-500 dark:focus:ring-gray-600`}
+                } rounded-lg focus:ring-4 focus:outline-none focus:ring-gray-50`}
                 type="button"
-                onClick={handleDownload}
+                onClick={handleDonwload}
               >
                 <svg
-                  className="w-4 h-4 text-gray-900 dark:text-white"
+                  className="w-4 h-4 text-gray-900"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
