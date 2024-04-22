@@ -1,7 +1,7 @@
 "use client";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { MdOutlineFileDownload } from "react-icons/md";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { crypt } from "@/crypto/rsa";
 import test from "node:test";
 
@@ -10,9 +10,10 @@ interface MessageProps {
   incoming: boolean;
   timestamp: string;
   sender: string;
+  chatKey: Key;
 }
 
-interface Key {
+export interface Key {
   n: string;
   e: string;
   d: string;
@@ -23,54 +24,79 @@ export default function Message({
   incoming,
   timestamp,
   sender,
+  chatKey,
 }: MessageProps) {
-  const key: Key | null =
-    sender === "Alice"
-      ? JSON.parse(localStorage.getItem("aliceKey") || "")
-      : JSON.parse(localStorage.getItem("bobKey") || "");
+  // const key: Key | null =
+  //   sender === "Alice"
+  //     ? JSON.parse(localStorage.getItem("aliceKey") || "")
+  //     : JSON.parse(localStorage.getItem("bobKey") || "");
 
   //initial encryption & decryption
-  let encryptedMessage = "";
-  let decryptedMessage = "";
-  if (key) {
+  // let encryptedMessage = "";
+  // let decryptedMessage = "";
+  // if (key) {
+  //   console.log(key);
+  //   for (let i = 0; i < message.length; i++) {
+  //     const messageChar = message.charCodeAt(i);
+  //     const encryptedChar = crypt(messageChar, BigInt(key.e), BigInt(key.n));
+  //     const decryptChar = crypt(encryptedChar, BigInt(key.d), BigInt(key.n));
+
+  //     const tempEncryptChar = String.fromCharCode(Number(encryptedChar));
+  //     encryptedMessage += tempEncryptChar;
+
+  //     const tempDecryptChar = String.fromCharCode(Number(decryptChar));
+  //     decryptedMessage += tempDecryptChar;
+  //   }
+
+  //   const testmessage = "resting in bali";
+  //   let encrypttest = "";
+  //   let decrypttest = "";
+  //   for (let i = 0; i < testmessage.length; i++) {
+  //     const encrypt = crypt(
+  //       testmessage.charCodeAt(i),
+  //       BigInt(key.e),
+  //       BigInt(key.n)
+  //     );
+  //     encrypttest += String.fromCharCode(Number(encrypt));
+
+  //     const decrypt = crypt(encrypt, BigInt(key.d), BigInt(key.n));
+  //     decrypttest += String.fromCharCode(Number(decrypt));
+  //   }
+  //   console.log(encrypttest, decrypttest);
+  // }
+
+  const cipherText = useMemo(() => {
+    let encryptedMessage = "";
     for (let i = 0; i < message.length; i++) {
       const messageChar = message.charCodeAt(i);
-      const encryptedChar = crypt(messageChar, BigInt(key.e), BigInt(key.n));
-      const decryptChar = crypt(encryptedChar, BigInt(key.d), BigInt(key.n));
-
-      const tempEncryptChar = String.fromCharCode(Number(encryptedChar));
-      encryptedMessage += tempEncryptChar;
-
-      const tempDecryptChar = String.fromCharCode(Number(decryptChar));
-      decryptedMessage += tempDecryptChar;
-    }
-
-    const testmessage = "resting in bali";
-    let encrypttest = "";
-    let decrypttest = "";
-    for (let i = 0; i < testmessage.length; i++) {
-      const encrypt = crypt(
-        testmessage.charCodeAt(i),
-        BigInt(key.e),
-        BigInt(key.n)
+      const encryptedChar = crypt(
+        messageChar,
+        BigInt(chatKey.e),
+        BigInt(chatKey.n)
       );
-      encrypttest += String.fromCharCode(Number(encrypt));
-
-      const decrypt = crypt(encrypt, BigInt(key.d), BigInt(key.n));
-      decrypttest += String.fromCharCode(Number(decrypt));
+      encryptedMessage += String.fromCharCode(Number(encryptedChar));
     }
-    console.log(encrypttest, decrypttest);
-  }
+    let bytes = new TextEncoder().encode(encryptedMessage);
+    let byteCharacters = Array.from(bytes);
+    return btoa(String.fromCharCode(...byteCharacters));
+  }, [message, chatKey]);
+
+  const plainText = useMemo(() => {
+    return message;
+  }, [message]);
+
+  // let bytes = new TextEncoder().encode(encryptedMessage);
+  // let byteCharacters = Array.from(bytes);
+  // let base64Encoded = btoa(String.fromCharCode(...byteCharacters));
 
   const [decrypted, setDecrypted] = useState<boolean>(false);
-  const [displaymessage, setDisplayMessage] =
-    useState<string>(encryptedMessage);
+  const [displaymessage, setDisplayMessage] = useState<string>(cipherText);
 
   const messageHandler = () => {
     if (decrypted) {
-      setDisplayMessage(encryptedMessage);
+      setDisplayMessage(cipherText);
     } else {
-      setDisplayMessage(decryptedMessage);
+      setDisplayMessage(plainText);
     }
     setDecrypted(!decrypted);
   };
