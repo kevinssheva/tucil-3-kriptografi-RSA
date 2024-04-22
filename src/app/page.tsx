@@ -4,6 +4,12 @@ import { generateKeys } from "@/crypto/rsa";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+interface KeyData {
+  n: BigInt;
+  e: BigInt;
+  d: number;
+}
+
 export default function Home() {
   const [bits, setBits] = useState(64); // [1
   const [aliceKey, setAliceKey] = useState({
@@ -81,6 +87,42 @@ export default function Home() {
     );
   };
 
+  const handleSaveKey = (keyData: KeyData, fileName: string) => {
+    const dataPrivate = JSON.stringify({
+      e: keyData.e.toString(),
+      n: keyData.n.toString(),
+    });
+
+    const base64Priv = btoa(dataPrivate);
+
+    const blob = new Blob([base64Priv], { type: "application/json" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName + "_private" + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    const dataPublic = JSON.stringify({
+      d: keyData.d.toString(),
+      n: keyData.n.toString(),
+    });
+
+    const base64Pub = btoa(dataPublic);
+
+    const blob2 = new Blob([base64Pub], { type: "application/json" });
+    const url2 = window.URL.createObjectURL(blob2);
+    const a2 = document.createElement("a");
+    a2.href = url2;
+    a2.download = fileName + "_public" + ".txt";
+    document.body.appendChild(a2);
+    a2.click();
+    window.URL.revokeObjectURL(url2);
+
+    return;
+  };
+
   return (
     <div className="w-full h-screen bg-orange-300 flex items-center justify-center">
       <div className="bg-[#EEEEEE] rounded-lg px-10 py-7 w-[60%]">
@@ -128,6 +170,12 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
+                <button
+                  className="p-2 bg-orange-200 rounded-lg font-semibold mt-4"
+                  onClick={() => handleSaveKey(aliceKey, "alice")}
+                >
+                  Save Alice's Key
+                </button>
               </div>
               <div className="w-[2px] bg-[#c8c8c8]"></div>
               <div className="w-1/2">
@@ -152,6 +200,12 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
+                <button
+                  className="p-2 bg-orange-200 rounded-lg font-semibold mt-4"
+                  onClick={() => handleSaveKey(bobKey, "bob")}
+                >
+                  Save Bob's Key
+                </button>
               </div>
             </div>
             <Link
