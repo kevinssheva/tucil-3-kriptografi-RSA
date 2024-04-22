@@ -10,9 +10,9 @@
 git clone https://github.com/kevinssheva/tucil-3-kriptografi-RSA.git
 ```
 
-2. Open the project with your favorite IDE (for me it's VSCode)
+2. Open the project with your IDE
 
-```bash
+```bash in the correct dir
 code .
 ```
 
