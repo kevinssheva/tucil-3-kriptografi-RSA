@@ -7,28 +7,22 @@
 1. Clone repository
 
 ```bash
-git clone https://github.com/gibranfsh/tugas-3-kriptografi-koding-Algoritma-RSA-untuk-simulasi-enkripsi-dekripsi-pada-aplikasi-chat
+git clone https://github.com/kevinssheva/tucil-3-kriptografi-RSA.git
 ```
 
-2. Move on to the project directory
-
-```bash
-cd tugas-3-kriptografi-koding-Algoritma-RSA-untuk-simulasi-enkripsi-dekripsi-pada-aplikasi-chat
-```
-
-3. Open the project with your favorite IDE (for me it's VSCode)
+2. Open the project with your favorite IDE (for me it's VSCode)
 
 ```bash
 code .
 ```
 
-4. Open a terminal and install the dependencies
+3. Open a terminal and install the dependencies
 
 ```bash
 npm install
 ```
 
-5. Run the project in development mode (Make sure you have Node.js installed)
+4. Run the project in development mode (Make sure you have Node.js installed)
 
 ```bash
 npm run dev
@@ -48,7 +42,7 @@ Link : https://docs.google.com/document/d/1GJ3f30nq0CP1V4rsUytd-oVOgU5-Uw8c__rp5
 | No  | Feature                                                                                                       | Success (✔) | Fail (❌) | Details                                                                                                                                             |
 | :-: | ------------------------------------------------------------------------------------------------------------- | :---------- | :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
 |  1  | Program dapat men-generate public key dan private key menggunakan algoritma RSA                             | ✔           |           |  |
-|  2  | Program dapat menyimpan public key dan private key dalam file terpisah dengan format nama <nama_orang>_public_key.pub.txt dan <nama_orang>_private_key.pri.txt | ✔           |           | 
+|  2  | Program dapat menyimpan public key dan private key dalam file terpisah dengan format nama <nama_orang>_public.txt dan <nama_orang>_private.txt | ✔           |           | 
 |  3  | Program dapat menerima pesan input dari pengguna berupa file sembarang (file text ataupun file biner) ataupun pesan yang diketikkan dari papan-ketik.          | ✔           |           | Pesan yang dimasukkan pengguna dibatasi isinya hanya berupa karakter ASCII |
 |  4  | Program dapat mengenkripsi plaintext dan mendekripsi ciphertext menjadi plaintext semula dengan algoritma RSA.                                                             | ✔           |           |
 |  5  | Program menampilkan teks plaintext dan ciphertext di layar percakapan. Khusus untuk ciphertext ditampilkan dalam notasi base64.                                   | ✔           |           |
