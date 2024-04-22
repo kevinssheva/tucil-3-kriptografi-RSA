@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import Image from "next/image";
 import Message, { Key } from "./component/Message";
@@ -13,17 +13,20 @@ interface MessageData {
   timestamp: string;
 }
 
+interface FileData {
+  name: string;
+  sender: string;
+  timestamp: string;
+  file?: File;
+}
+
 export default function ChatPage(): JSX.Element {
   const [messagesData, setMessagesData] = useState<MessageData[]>([
-    { message: "Hello", sender: "Alice", timestamp: "2:00" },
-    { message: "Hi", sender: "Bob", timestamp: "12:01" },
     { message: "How are you?", sender: "Alice", timestamp: "12:02" },
     { message: "I'm fine", sender: "Bob", timestamp: "12:03" },
-    { message: "Good to hear that", sender: "Alice", timestamp: "12:04" },
-    { message: "How about you?", sender: "Bob", timestamp: "12:05" },
-    { message: "I'm good too", sender: "Alice", timestamp: "12:06" },
-    { message: "That's great!", sender: "Bob", timestamp: "12:07" },
   ]);
+
+  const [fileData, setFileData] = useState<FileData[]>([]);
 
   const [bobMessage, setBobMessage] = useState<string>("");
   const [aliceMessage, setAliceMessage] = useState<string>("");
@@ -101,12 +104,24 @@ export default function ChatPage(): JSX.Element {
     if (file) {
       // Handle file upload
       console.log("File uploaded:", file);
-      console.log(file.name)
+      console.log(file.name);
+      const timestamp = new Date()
+        .toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "numeric",
+        })
+        .split(" ")[0];
+      const newFile: FileData = {
+        name: file.name,
+        sender: "Alice",
+        timestamp,
+        file,
+      };
+      setFileData((prevFiles) => [...prevFiles, newFile]);
     }
   };
 
   useEffect(() => {
-    // Scroll to the bottom of the chat after messages are updated
     if (aliceChatContainerRef.current) {
       aliceChatContainerRef.current.scrollTo({
         top: aliceChatContainerRef.current.scrollHeight,
@@ -119,7 +134,7 @@ export default function ChatPage(): JSX.Element {
         behavior: "smooth",
       });
     }
-  }, [messagesData]);
+  }, [messagesData, fileData]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -158,6 +173,14 @@ export default function ChatPage(): JSX.Element {
                     chatKey={aliceKey}
                   />
                 ))}
+                {fileData.map((file, index) => (
+                  <File
+                    key={index}
+                    name={file.name}
+                    incoming={file.sender === "Alice"}
+                    timestamp={file.timestamp}
+                  />
+                ))}
               </div>
             </div>
 
@@ -173,7 +196,10 @@ export default function ChatPage(): JSX.Element {
                   }
                   onKeyDown={handleBobKeyDown}
                 />
-                <button className="text-slate-500 rounded-full p-2" onClick={handleAttachClick}>
+                <button
+                  className="text-slate-500 rounded-full p-2"
+                  onClick={handleAttachClick}
+                >
                   <IoAttach size={30} />
                 </button>
                 <button
@@ -223,7 +249,14 @@ export default function ChatPage(): JSX.Element {
                     chatKey={bobKey}
                   />
                 ))}
-                <File name="file.pdf" timestamp="today" />
+                {fileData.map((file, index) => (
+                  <File
+                    key={index}
+                    name={file.name}
+                    incoming={file.sender === "Bob"}
+                    timestamp={file.timestamp}
+                  />
+                ))}
               </div>
             </div>
 
@@ -239,7 +272,10 @@ export default function ChatPage(): JSX.Element {
                   }
                   onKeyDown={handleAliceKeyDown}
                 />
-                <button className="text-slate-500 rounded-full p-2" onClick={handleAttachClick}>
+                <button
+                  className="text-slate-500 rounded-full p-2"
+                  onClick={handleAttachClick}
+                >
                   <IoAttach size={30} />
                 </button>
                 <button
