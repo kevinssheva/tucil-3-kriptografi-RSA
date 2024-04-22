@@ -26,47 +26,24 @@ export default function Message({
   sender,
   chatKey,
 }: MessageProps) {
-  // const key: Key | null =
-  //   sender === "Alice"
-  //     ? JSON.parse(localStorage.getItem("aliceKey") || "")
-  //     : JSON.parse(localStorage.getItem("bobKey") || "");
+  const divideLongText = (text: string, maxChar: number) => {
+    let count = 0;
+    for (let i = 0; i < text.length; i++) {
+      count++;
+      if (text[i] === " " || text[i] === "\n") {
+        count = 0;
+      }
+      if (count === maxChar) {
+        text = text.slice(0, i) + "\n" + text.slice(i);
+        count = 0;
+      }
+    }
+    return text;
+  };
 
-  //initial encryption & decryption
-  // let encryptedMessage = "";
-  // let decryptedMessage = "";
-  // if (key) {
-  //   console.log(key);
-  //   for (let i = 0; i < message.length; i++) {
-  //     const messageChar = message.charCodeAt(i);
-  //     const encryptedChar = crypt(messageChar, BigInt(key.e), BigInt(key.n));
-  //     const decryptChar = crypt(encryptedChar, BigInt(key.d), BigInt(key.n));
-
-  //     const tempEncryptChar = String.fromCharCode(Number(encryptedChar));
-  //     encryptedMessage += tempEncryptChar;
-
-  //     const tempDecryptChar = String.fromCharCode(Number(decryptChar));
-  //     decryptedMessage += tempDecryptChar;
-  //   }
-
-  //   const testmessage = "resting in bali";
-  //   let encrypttest = "";
-  //   let decrypttest = "";
-  //   for (let i = 0; i < testmessage.length; i++) {
-  //     const encrypt = crypt(
-  //       testmessage.charCodeAt(i),
-  //       BigInt(key.e),
-  //       BigInt(key.n)
-  //     );
-  //     encrypttest += String.fromCharCode(Number(encrypt));
-
-  //     const decrypt = crypt(encrypt, BigInt(key.d), BigInt(key.n));
-  //     decrypttest += String.fromCharCode(Number(decrypt));
-  //   }
-  //   console.log(encrypttest, decrypttest);
-  // }
-
-  const cipherText = useMemo(() => {
+  const text = useMemo(() => {
     let encryptedMessage = "";
+    let decryptedMessage = "";
     for (let i = 0; i < message.length; i++) {
       const messageChar = message.charCodeAt(i);
       const encryptedChar = crypt(
@@ -74,29 +51,31 @@ export default function Message({
         BigInt(chatKey.e),
         BigInt(chatKey.n)
       );
+      const decryptChar = crypt(
+        encryptedChar,
+        BigInt(chatKey.d),
+        BigInt(chatKey.n)
+      );
       encryptedMessage += String.fromCharCode(Number(encryptedChar));
+      decryptedMessage += String.fromCharCode(Number(decryptChar));
     }
     let bytes = new TextEncoder().encode(encryptedMessage);
     let byteCharacters = Array.from(bytes);
-    return btoa(String.fromCharCode(...byteCharacters));
+    let cipherText = btoa(String.fromCharCode(...byteCharacters));
+
+    cipherText = divideLongText(cipherText, 50);
+    decryptedMessage = divideLongText(decryptedMessage, 65);
+    return { cipherText, plainText: decryptedMessage };
   }, [message, chatKey]);
 
-  const plainText = useMemo(() => {
-    return message;
-  }, [message]);
-
-  // let bytes = new TextEncoder().encode(encryptedMessage);
-  // let byteCharacters = Array.from(bytes);
-  // let base64Encoded = btoa(String.fromCharCode(...byteCharacters));
-
   const [decrypted, setDecrypted] = useState<boolean>(false);
-  const [displaymessage, setDisplayMessage] = useState<string>(cipherText);
+  const [displaymessage, setDisplayMessage] = useState<string>(text.cipherText);
 
   const messageHandler = () => {
     if (decrypted) {
-      setDisplayMessage(cipherText);
+      setDisplayMessage(text.cipherText);
     } else {
-      setDisplayMessage(plainText);
+      setDisplayMessage(text.plainText);
     }
     setDecrypted(!decrypted);
   };
@@ -111,52 +90,56 @@ export default function Message({
   };
 
   return (
-    <div className={`${incoming ? "w-fit" : ""}`}>
+    <div className={`w-full`}>
       <div
-        className={`${
-          incoming ? "bg-slate-200" : "bg-orange-200"
-        } rounded-lg p-3
-        ${incoming ? "" : "ml-auto w-fit"}
+        className={`flex flex-col w-fit max-w-[90%] ${!incoming && "ml-auto"}`}
+      >
+        <div
+          className={`${
+            incoming ? "bg-slate-200" : "bg-orange-200"
+          } rounded-lg p-3
+        ${incoming ? "" : "ml-auto"}
         `}
-        onClick={messageHandler}
-      >
-        <h1>{incoming ? displaymessage : message}</h1>
-      </div>
-      <div
-        className={`flex gap-6 ${
-          !incoming ? "justify-end" : "justify-between items-center"
-        }`}
-      >
-        <p
-          className={`text-xs text-gray-400 ${
-            incoming ? "text-left" : "text-right"
+          onClick={messageHandler}
+        >
+          <h1>{incoming ? displaymessage : text.plainText}</h1>
+        </div>
+        <div
+          className={`flex gap-6 ${
+            !incoming ? "justify-end" : "justify-between items-center"
           }`}
         >
-          {timestamp}
-        </p>
+          <p
+            className={`text-xs text-gray-400 ${
+              incoming ? "text-left" : "text-right"
+            }`}
+          >
+            {timestamp}
+          </p>
 
-        {incoming ? (
-          <div className="flex gap-2">
-            <MdOutlineFileDownload
-              size={20}
-              className="cursor-pointer"
-              onClick={handleDonwload}
-            />
-            {decrypted ? (
-              <FaRegEye
+          {incoming ? (
+            <div className="flex gap-2">
+              <MdOutlineFileDownload
                 size={20}
                 className="cursor-pointer"
-                onClick={messageHandler}
+                onClick={handleDonwload}
               />
-            ) : (
-              <FaRegEyeSlash
-                size={20}
-                className="cursor-pointer"
-                onClick={messageHandler}
-              />
-            )}
-          </div>
-        ) : null}
+              {decrypted ? (
+                <FaRegEye
+                  size={20}
+                  className="cursor-pointer"
+                  onClick={messageHandler}
+                />
+              ) : (
+                <FaRegEyeSlash
+                  size={20}
+                  className="cursor-pointer"
+                  onClick={messageHandler}
+                />
+              )}
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

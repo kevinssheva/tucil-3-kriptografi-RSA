@@ -105,7 +105,7 @@ export default function ChatPage(): JSX.Element {
   }, [messagesData]);
 
   return (
-    <div className="bg-orange-200 flex flex-col gap-8 min-h-screen max-h-screen p-20">
+    <div className="bg-orange-200 flex items-center justify-center gap-8 min-h-screen max-h-screen p-20">
       {isLoading ? (
         <div>Loading</div>
       ) : (
