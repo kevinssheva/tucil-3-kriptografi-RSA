@@ -8,15 +8,10 @@ import { useRouter } from "next/navigation";
 import File from "./component/File";
 
 interface MessageData {
-  message: string;
-  sender: string;
-  timestamp: string;
-}
-
-interface FileData {
-  name: string;
-  type: string;
-  content: string | Uint8Array;
+  message?: string;
+  name?: string;
+  type?: string;
+  content?: string | Uint8Array;
   sender: string;
   timestamp: string;
 }
@@ -26,8 +21,6 @@ export default function ChatPage(): JSX.Element {
     { message: "How are you?", sender: "Alice", timestamp: "12:02" },
     { message: "I'm fine", sender: "Bob", timestamp: "12:03" },
   ]);
-
-  const [fileData, setFileData] = useState<FileData[]>([]);
 
   const [bobMessage, setBobMessage] = useState<string>("");
   const [aliceMessage, setAliceMessage] = useState<string>("");
@@ -43,7 +36,6 @@ export default function ChatPage(): JSX.Element {
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
-  console.log(fileData);
   useEffect(() => {
     setIsLoading(true);
     const savedAliceKey = localStorage.getItem("aliceKey");
@@ -94,7 +86,6 @@ export default function ChatPage(): JSX.Element {
   };
 
   const handleAttachClick = () => {
-    // Trigger file input click
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -103,7 +94,6 @@ export default function ChatPage(): JSX.Element {
   const handleFileInputChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
-      // Handle file upload
       const fileName = file.name;
       const fileType = file.type;
       const sender = e.target.name;
@@ -134,7 +124,7 @@ export default function ChatPage(): JSX.Element {
     content: string | Uint8Array,
     sender: string
   ) => {
-    setFileData((prevFiles) => [
+    setMessagesData((prevFiles) => [
       ...prevFiles,
       {
         name: fileName,
@@ -181,7 +171,7 @@ export default function ChatPage(): JSX.Element {
         behavior: "smooth",
       });
     }
-  }, [messagesData, fileData]);
+  }, [messagesData]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -210,27 +200,28 @@ export default function ChatPage(): JSX.Element {
                 className="flex flex-col gap-4 h-96 my-2 overflow-auto"
                 ref={aliceChatContainerRef}
               >
-                {messagesData.map((message, index) => (
-                  <Message
-                    key={index}
-                    message={message.message}
-                    incoming={message.sender === "Alice"}
-                    timestamp={message.timestamp}
-                    sender={message.sender}
-                    chatKey={aliceKey}
-                  />
-                ))}
-                {fileData.map((file, index) => (
-                  <File
-                    key={index}
-                    name={file.name}
-                    type={file.type}
-                    incoming={file.sender === "Alice"}
-                    timestamp={file.timestamp}
-                    content={file.content}
-                    chatKey={aliceKey}
-                  />
-                ))}
+                {messagesData.map((message, index) =>
+                  message.name ? (
+                    <File
+                      key={index}
+                      name={message.name}
+                      type={message.type!}
+                      incoming={message.sender === "Alice"}
+                      timestamp={message.timestamp}
+                      content={message.content!}
+                      chatKey={aliceKey}
+                    />
+                  ) : (
+                    <Message
+                      key={index}
+                      message={message.message!}
+                      incoming={message.sender === "Alice"}
+                      timestamp={message.timestamp}
+                      sender={message.sender}
+                      chatKey={aliceKey}
+                    />
+                  )
+                )}
               </div>
             </div>
 
@@ -290,27 +281,28 @@ export default function ChatPage(): JSX.Element {
                 className="flex flex-col gap-4 h-96 my-2 overflow-auto"
                 ref={bobChatContainerRef}
               >
-                {messagesData.map((message, index) => (
-                  <Message
-                    key={index}
-                    message={message.message}
-                    incoming={message.sender === "Bob"}
-                    timestamp={message.timestamp}
-                    sender={message.sender}
-                    chatKey={bobKey}
-                  />
-                ))}
-                {fileData.map((file, index) => (
-                  <File
-                    key={index}
-                    name={file.name}
-                    type={file.type}
-                    incoming={file.sender === "Bob"}
-                    timestamp={file.timestamp}
-                    content={file.content}
-                    chatKey={bobKey}
-                  />
-                ))}
+                {messagesData.map((message, index) =>
+                  message.name ? (
+                    <File
+                      key={index}
+                      name={message.name}
+                      type={message.type!}
+                      incoming={message.sender === "Bob"}
+                      timestamp={message.timestamp}
+                      content={message.content!}
+                      chatKey={aliceKey}
+                    />
+                  ) : (
+                    <Message
+                      key={index}
+                      message={message.message!}
+                      incoming={message.sender === "Bob"}
+                      timestamp={message.timestamp}
+                      sender={message.sender}
+                      chatKey={aliceKey}
+                    />
+                  )
+                )}
               </div>
             </div>
 

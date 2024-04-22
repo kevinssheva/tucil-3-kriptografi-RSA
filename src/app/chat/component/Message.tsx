@@ -1,9 +1,8 @@
 "use client";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { MdOutlineFileDownload } from "react-icons/md";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { crypt } from "@/crypto/rsa";
-import test from "node:test";
 
 interface MessageProps {
   message: string;

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Key } from "./Message";
 import { crypt } from "@/crypto/rsa";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 
 interface FileProps {
   name: string;
@@ -19,15 +20,6 @@ export default function File({
   type,
   chatKey,
 }: FileProps) {
-  // console.log(file);
-  // const handleDownload = () => {
-  //   if (!file) return;
-  //   const url = URL.createObjectURL(file);
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = name;
-  //   a.click();
-  // };
   const file = useMemo(() => {
     if (typeof content === "string") {
       let encryptedMessage = "";
@@ -73,7 +65,11 @@ export default function File({
 
   const [decrypted, setDecrypted] = useState<boolean>(false);
   const [displayContent, setDisplayContent] = useState<string | Uint8Array>(
-    file.cipherText
+    incoming ? file.cipherText : file.plainText
+  );
+
+  const [fileName, setFileName] = useState<string>(
+    name.split(".")[0] + "_encrypted." + name.split(".")[1]
   );
 
   const fileHandler = () => {
@@ -90,9 +86,21 @@ export default function File({
     const url = URL.createObjectURL(new Blob([displayContent], { type }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = name;
+    a.download = incoming ? fileName : name;
     a.click();
   };
+
+  const handleCrypt = () => {
+    if (!decrypted) {
+      setDisplayContent(file.plainText);
+      setFileName(name.split(".")[0] + "_decrypted." + name.split(".")[1]);
+    } else {
+      setDisplayContent(file.cipherText);
+      setFileName(name.split(".")[0] + "_encrypted." + name.split(".")[1]);
+    }
+    setDecrypted(!decrypted);
+  };
+
   return (
     <div
       className={`flex items-start gap-2.5 ${
@@ -108,7 +116,7 @@ export default function File({
           >
             <div className="">
               <span className="flex items-center gap-2 text-sm font-medium text-gray-900 pb-2">
-                {name}
+                {incoming ? fileName : name}
               </span>
             </div>
             <div className="inline-flex self-center items-center">
@@ -134,13 +142,37 @@ export default function File({
               </button>
             </div>
           </div>
-          <p
-            className={`text-xs text-gray-400 ${
-              incoming ? "text-left" : "text-right"
+          <div
+            className={`flex gap-6 ${
+              !incoming ? "justify-end" : "justify-between items-center"
             }`}
           >
-            {timestamp}
-          </p>
+            <p
+              className={`text-xs text-gray-400 ${
+                incoming ? "text-left" : "text-right"
+              }`}
+            >
+              {timestamp}
+            </p>
+
+            {incoming ? (
+              <div className="flex gap-2">
+                {decrypted ? (
+                  <FaRegEye
+                    size={20}
+                    className="cursor-pointer"
+                    onClick={handleCrypt}
+                  />
+                ) : (
+                  <FaRegEyeSlash
+                    size={20}
+                    className="cursor-pointer"
+                    onClick={handleCrypt}
+                  />
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
